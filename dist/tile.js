@@ -233,13 +233,14 @@ function drawAcct(state, who) {
   document.body.classList.toggle('solo', state === 'none' && !account?.setupShowing())
 }
 
-// Open Spotify, at the left of the bar while there is no account and the app isn't open. A tile
-// can't start an app (workshop never opens one), so this is Spotify's web page, which offers to
-// open the app.
+// Open Spotify, at the left of the bar while there is no account: brings the app in use to the
+// front (workshop.music.show, bridge 1.6). Core never opens a closed app, so it shows only while
+// Spotify or Music is running; it must be called in the click itself.
 function drawOpenApp() {
-  ui.openApp.hidden = acctState === 'connected' || !!now?.player || !!now?.error
+  ui.openApp.hidden = acctState === 'connected' || !now?.player || !!now?.error
+  ui.openApp.textContent = now?.player === 'music' ? 'Open Music' : 'Open Spotify'
 }
-ui.openApp.addEventListener('click', () => run(ws.openExternal('https://open.spotify.com/')))
+ui.openApp.addEventListener('click', () => run(ws.music.show()))
 ui.own.addEventListener('click', () => { account?.ownApp(); drawAcct(acctState) })
 ui.acct.addEventListener('click', () => {
   if (acctState === 'connected') return account?.disconnect()

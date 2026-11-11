@@ -5,13 +5,14 @@ A Spotify tile for [workshop](https://github.com/DoshaLabs/workshop)'s tile colu
 Spotify account and it also lists what you played lately and your playlists, and searches; a
 click plays the pick in the Spotify app on your Mac.
 
-Needs workshop with bridge 1.5 (`workshop.oauth`). An older workshop lists it in the Marketplace
-but will not install it.
+Needs workshop with bridge 1.6 (`workshop.oauth`, and `workshop.music.show()` for the Open
+Spotify button). An older workshop lists it in the Marketplace but will not install it.
 
 ## What it asks for
 
-- `music`: workshop reads and drives Spotify.app and Music.app for the tile. Workshop never opens
-  either app. macOS asks once whether workshop may control them.
+- `music`: workshop reads and drives Spotify.app and Music.app for the tile, and Open Spotify
+  brings the running app to the front. Workshop never opens either app. macOS asks once whether
+  workshop may control them.
 - `storage`: your Spotify sign-in (a refresh token, kept in the tile's own storage on your Mac),
   the tab you were on, and your own Spotify app's Client ID if you use one.
 - `oauth: accounts.spotify.com`: Connect opens Spotify's sign-in page in your browser, and
@@ -24,10 +25,12 @@ There is no client secret: the tile signs in with PKCE, which needs none. The Cl
 
 ## Connect
 
-Press Connect and approve on Spotify's page. The shared Spotify app is in Spotify's development
-mode, which admits only accounts its owner added. Anyone else uses "Use my own app": the tile
-walks you through making a Spotify app of your own (a minute on Spotify's dashboard), with the
-redirect address to copy.
+Press Connect Account (beta) and approve on Spotify's page. Until you connect, the tile is a
+larger now-playing view with its controls; Recent, Playlists and Search appear once you do.
+
+The shared Spotify app is in Spotify's development mode, which admits only accounts its owner
+added. Anyone else uses "Use my own app": the tile walks you through making a Spotify app of your
+own (a minute on Spotify's dashboard), with the redirect address to copy.
 
 Playing from the lists without bringing Spotify to the front needs Spotify Premium; without it the
 tile falls back to asking the app itself, which comes forward.
