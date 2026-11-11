@@ -1,7 +1,7 @@
 {
   "id": "spotify",
   "name": "Spotify",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "workshop": "^1.6",
   "author": "DoshaLabs",
   "repo": "https://github.com/DoshaLabs/workshop-spotify",
