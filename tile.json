@@ -1,0 +1,24 @@
+{
+  "id": "spotify",
+  "name": "Spotify",
+  "version": "0.1.0",
+  "workshop": "^1.5",
+  "author": "DoshaLabs",
+  "repo": "https://github.com/DoshaLabs/workshop-spotify",
+  "hint": "What Spotify is playing, its controls, your recent plays and playlists, and search",
+  "icon": "icon.svg",
+  "entry": "dist/index.html",
+  "pane": false,
+  "span": 1,
+  "permissions": {
+    "music": true,
+    "storage": true,
+    "oauth": [
+      "accounts.spotify.com"
+    ],
+    "net": [
+      "accounts.spotify.com",
+      "api.spotify.com"
+    ]
+  }
+}

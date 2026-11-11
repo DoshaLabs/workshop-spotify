@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src 'self'; style-src 'self'; script-src 'self'; img-src 'self'; connect-src https://api.spotify.com https://accounts.spotify.com" />
+    <title>Spotify</title>
+    <link rel="stylesheet" href="tile.css" />
+  </head>
+  <body>
+    <main id="body">
+      <section class="now">
+        <div class="lead">
+        <div class="art"><img id="art" alt="" hidden /><span id="art-ph" class="art-ph">♪</span></div>
+        <div class="meta">
+          <div id="title" class="title">Connecting…</div>
+          <div id="artist" class="artist"></div>
+          <div id="album" class="album"></div>
+        </div>
+        </div>
+        <div class="controls">
+          <button id="prev" class="ctl" title="Previous" aria-label="Previous">⏮</button>
+          <button id="play" class="ctl big" title="Play" aria-label="Play">▶</button>
+          <button id="next" class="ctl" title="Next" aria-label="Next">⏭</button>
+        </div>
+        <span id="modes" class="modes"></span>
+      </section>
+
+      <section class="progress">
+        <span id="pos" class="time">0:00</span>
+        <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position" />
+        <span id="dur" class="time">0:00</span>
+      </section>
+
+      <p id="error" class="error" hidden></p>
+
+      <nav class="tabs" role="tablist">
+        <button id="open-app" class="tab-tool primary" title="Opens open.spotify.com in your browser; from there, Open app" hidden>Open Spotify</button>
+        <button class="tab" data-tab="recent" role="tab">Recent</button>
+        <button class="tab" data-tab="playlists" role="tab">Playlists</button>
+        <button class="tab" data-tab="search" role="tab">Search</button>
+        <span id="search-slot" class="search-slot"></span>
+        <span class="tab-end">
+          <button id="refresh" class="tab-tool" title="Refresh" aria-label="Refresh" hidden>↻</button>
+          <button id="own" class="tab-tool acct" title="Sign in through a Spotify app of your own" hidden>Use my own app</button>
+          <button id="acct" class="tab-tool acct" hidden></button>
+        </span>
+      </nav>
+
+      <section class="panel" data-panel="account">
+        <div id="connect" class="connect"></div>
+        <ul id="alist" class="list"></ul>
+      </section>
+    </main>
+    <script type="module" src="tile.js"></script>
+  </body>
+</html>
