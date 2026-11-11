@@ -18,10 +18,11 @@ export const DASHBOARD = 'https://developer.spotify.com/dashboard/create'
 const AUTHORIZE = 'https://accounts.spotify.com/authorize'
 const TOKEN = 'https://accounts.spotify.com/api/token'
 const API = 'https://api.spotify.com/v1'
-// user-modify-playback-state: start a playlist through the Web API, which leaves Spotify in the
-// background (workshop.music.playUri brings Spotify to the front).
-const SCOPES = ['playlist-read-private', 'playlist-read-collaborative', 'user-read-recently-played', 'user-modify-playback-state']
-const PLAY_SCOPE = 'user-modify-playback-state'
+// user-modify-playback-state, with user-read-playback-state to find this Mac among the account's
+// devices: start a playlist through the Web API, which leaves Spotify in the background
+// (workshop.music.playUri brings Spotify to the front).
+const PLAY_SCOPES = ['user-modify-playback-state', 'user-read-playback-state']
+const SCOPES = ['playlist-read-private', 'playlist-read-collaborative', 'user-read-recently-played', ...PLAY_SCOPES]
 const EARLY_MS = 60_000
 const LIBRARY_TTL_MS = 5 * 60_000
 const RECENT_CONTEXTS = 8
@@ -210,31 +211,39 @@ async function api(path, retry = true, init = {}) {
     if (r.status === 429) throw new Error('Spotify says too many requests. Try again in a minute.')
     throw Object.assign(new Error(`Spotify: ${msg}`), { status: r.status, reason: j?.error?.reason })
   }
+  // A PUT may answer 200 with an empty body: there is nothing to read.
+  if ((init.method || 'GET') !== 'GET') return r.text().then((t) => (t ? JSON.parse(t) : null)).catch(() => null)
   return r.json()
 }
 
 // ---------------------------------------------------------------- playing
 
 /** May this connection start playback through the Web API? (Older connections lack the scope.) */
-export const canPlay = () => state() === 'connected' && (st.account?.scope || '').split(' ').includes(PLAY_SCOPE)
+export const canPlay = () => {
+  const granted = (st.account?.scope || '').split(' ')
+  return state() === 'connected' && PLAY_SCOPES.every((x) => granted.includes(x))
+}
 
 /**
  * Start a song, playlist, album or artist on the Spotify app on this Mac, without bringing it to the
  * front. Needs Premium. Throws when it can't, so the caller can fall back to workshop.music.playUri.
+ *
+ * Spotify plays on whatever it thinks is the active device unless told otherwise, which is often a
+ * phone or a browser tab, not this Mac. So name the device: the one Computer in the list (this Mac's
+ * Spotify app; an idle app is listed but not "active"), else the active Computer. Returns the
+ * device's name, so a caller that sees nothing start here can say where it went.
  */
 export async function play(uri) {
   const body = JSON.stringify(/^spotify:(track|episode):/.test(uri) ? { uris: [uri] } : { context_uri: uri })
-  try {
-    await api('/me/player/play', true, { method: 'PUT', body })
-  } catch (e) {
-    // No active device: Spotify is open but idle. Aim at this computer's player and try once more.
-    if (e.status !== 404) throw e
-    const d = await api('/me/player/devices')
-    const devs = d?.devices || []
-    const dev = devs.find((x) => x.is_active) || devs.find((x) => x.type === 'Computer') || devs[0]
-    if (!dev?.id) throw e
-    await api(`/me/player/play?device_id=${encodeURIComponent(dev.id)}`, true, { method: 'PUT', body })
+  const devs = (await api('/me/player/devices'))?.devices || []
+  const computers = devs.filter((x) => x.type === 'Computer' && !x.is_restricted && x.id)
+  const dev = computers.length === 1 ? computers[0] : computers.find((x) => x.is_active)
+  if (!dev) {
+    const names = devs.map((x) => `${x.name} (${x.type})`).join(', ')
+    throw new Error(computers.length ? `Spotify lists more than one computer (${names}); playing it here instead.` : `Spotify doesn't list this Mac's app as a device${names ? ` (it lists ${names})` : ''}.`)
   }
+  await api(`/me/player/play?device_id=${encodeURIComponent(dev.id)}`, true, { method: 'PUT', body })
+  return dev.name || 'a computer'
 }
 
 // ---------------------------------------------------------------- reading

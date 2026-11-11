@@ -177,16 +177,40 @@ function checkSpotify() {
 // An item from the lists: { uri, kind, name, by }.
 // Through the Web API first, which leaves Spotify in the background; if that can't (no Premium,
 // a connection made before this, Spotify not reachable), workshop's playUri, which brings it forward.
+// Spotify's Web API can say yes and still start nothing on this Mac (it aimed at another device,
+// or the app ignored it), so check that the Mac actually started, and fall back if it didn't.
 let hinted = false
 async function playItem(item) {
   if (!checkSpotify()) return
   if (sp.canPlay()) {
-    try { await sp.play(item.uri); return } catch { /* fall through */ }
-  } else if (sp.state() === 'connected' && !hinted) {
+    const before = trackKey(now), wasPlaying = now?.state === 'playing'
+    let why = null
+    try {
+      const device = await sp.play(item.uri)
+      if (await startedHere(before, wasPlaying)) return
+      why = `Spotify sent it to “${device}”, but nothing started here.`
+    } catch (e) { why = e.message }
+    try {
+      await ws.music.playUri(item.uri)
+      showError(why)        // it plays, but say why Spotify came forward
+    } catch (e) { showError(`${why} Then: ${e.message}`) }
+    return
+  }
+  if (sp.state() === 'connected' && !hinted) {
     hinted = true
     showError('Disconnect and Connect again to play without Spotify jumping to the front.')
   }
   await run(ws.music.playUri(item.uri))
+}
+
+/** Did the Spotify app on this Mac start something new within a few seconds? */
+async function startedHere(before, wasPlaying) {
+  for (let i = 0; i < 10; i++) {
+    await new Promise((r) => setTimeout(r, 300))
+    const m = await ws.music.get().catch(() => null)
+    if (m?.player === 'spotify' && m.state === 'playing' && (trackKey(m) !== before || !wasPlaying)) return true
+  }
+  return false
 }
 
 // The row of pills scrolls sideways; a mouse wheel's up/down scrolls it too.
