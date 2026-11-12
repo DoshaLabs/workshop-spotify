@@ -213,8 +213,10 @@ async function startedHere(before, wasPlaying) {
   return false
 }
 
-// The row of pills scrolls sideways; a mouse wheel's up/down scrolls it too.
+// Compact tiles use horizontal pills, so route vertical wheel gestures sideways there.
+// In expanded tiles the list scrolls vertically and should keep the browser's default behavior.
 ui.alist.addEventListener('wheel', (e) => {
+  if (ui.alist.scrollHeight > ui.alist.clientHeight + 1) return
   if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
   e.preventDefault()
   ui.alist.scrollLeft += e.deltaY

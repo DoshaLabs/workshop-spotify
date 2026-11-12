@@ -120,7 +120,7 @@ input[type='text'] {
 }
 input[type='text']::placeholder { color: var(--ws-muted); }
 
-/* rows of pills, scrolling sideways */
+/* Recent, playlists, and search results stay as horizontal pills in compact tiles. */
 .list {
   list-style: none; margin: 0; padding: 0 0 4px;
   flex: none;
@@ -143,6 +143,18 @@ input[type='text']::placeholder { color: var(--ws-muted); }
   display: flex; flex-direction: column; align-items: flex-start;
   border: none; border-radius: 999px; text-align: left;
   padding: 4px 14px; line-height: 1.25;
+}
+
+/* A taller tile has room for a vertical results list. */
+@media (min-height: 240px) {
+  .list {
+    flex: 1; min-height: 0; padding: 0 2px 4px 0;
+    flex-direction: column;
+    overflow-x: hidden; overflow-y: auto;
+  }
+  .list::-webkit-scrollbar { width: 4px; height: auto; }
+  .item { width: 100%; max-width: none; min-width: 0; border-radius: 7px; }
+  .go { border-radius: 6px; padding: 6px 10px; }
 }
 .go:hover:not(:disabled) { border: none; }
 .name, .by { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
